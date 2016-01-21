@@ -11,21 +11,25 @@ io.on('connection',function(socket){
 	console.log('User join room');
 	nbrOfUsers++;
 	socket.emit('currentUsers',{count:nbrOfUsers});
-	socket.broadcast.emit('newUser',{count:nbrOfUsers, msg:"User join room"});
+	socket.broadcast.emit('newUser',{count:nbrOfUsers, msg:"User join room", type:"Info"});
 	
 	socket.on('newMessage',function(data){
+		data.type="Friend";
 		socket.broadcast.emit('newMessage',data);
-		console.log('new message: '+data.msg);
 	});
 
 	socket.on('startTyping',function(data){
 		socket.broadcast.emit('startTyping',{status:"User is typing"});
 	});
 
+	socket.on('stopTyping',function(data){
+		socket.broadcast.emit('startTyping',{status:"", type:"Server"});
+	});
+
 	io.on('disconnect',function(){	
 		console.log('User left room');
 		nbrOfUsers--;
-		socket.broadcast.emit('userLeft',{msg:"User left room"});
+		socket.broadcast.emit('userLeft',{msg:"User left room", type:"Info"});
 	})
 });
 

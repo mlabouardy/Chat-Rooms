@@ -7,14 +7,17 @@ angular.module('myApp',[])
 		$scope.messages=[];
 
 		$scope.send=function(){
-			$scope.messages.push("Me:"+$scope.msg);
-			
+			var data={};
+			data.msg="Me:"+$scope.msg;
+			data.type="User";
+			data.date=new Date();
+			$scope.messages.push(data);
 
 			var chat_group=$('#scroll');
 		    var height=chat_group[0].scrollHeight;
 		    chat_group.scrollTop(height);
 
-		    socket.emit('newMessage',{msg:$scope.msg});
+		    socket.emit('newMessage', data);
 		    $scope.msg="";
 		}
 
@@ -22,16 +25,20 @@ angular.module('myApp',[])
 			$scope.messages=[];
 		}
 
-		$scope.$watch('msg', function(){
-	        socket.emit('startTyping',{});
-    	});
+		$scope.startTyping=function(){
+			socket.emit('startTyping',{});
+		}
+
+		$scope.stopTyping=function(){
+			socket.emit('stopTyping',{});
+		}
 
 		var socket = io.connect('http://localhost:8080');
 
 		socket.on('newUser',function(data){
 			$scope.$apply(function() {
 			  $scope.currentUsers=data.count;
-			  $scope.messages.push(data.msg);
+			  $scope.messages.push(data);
 			});
 			
 		});
@@ -45,13 +52,14 @@ angular.module('myApp',[])
 
 		socket.on('userLeft',function(data){
 			$scope.$apply(function() {
-			  $scope.messages.push(data.msg);
+			  $scope.messages.push(data);
 			});
 		});
 
 		socket.on('newMessage',function(data){
 			$scope.$apply(function() {
-			  $scope.messages.push("Other:"+data.msg);
+			  data.msg="Other:"+data.msg;
+			  $scope.messages.push(data);
 			});
 		});
 
